@@ -163,17 +163,29 @@ def init_db():
     db.commit()
 
     # ----- Seed: usuário admin padrão -----
+    # A senha vem da variável de ambiente ADMIN_PASSWORD; se não definida, usa um padrão
+    admin_password = os.environ.get('ADMIN_PASSWORD', 'seges2026')
+    admin_username = os.environ.get('ADMIN_USERNAME', 'admin')
+
     existe = cur.execute('SELECT COUNT(*) FROM usuarios').fetchone()[0]
     if existe == 0:
         cur.execute(
             'INSERT INTO usuarios (username, password_hash, nome, email) VALUES (?,?,?,?)',
             (
-                'admin',
-                generate_password_hash('seges2026'),
+                admin_username,
+                generate_password_hash(admin_password),
                 'Administrador SEGES',
                 'seges.progep@ufms.br'
             )
         )
+    else:
+        # Se já existir admin e a env ADMIN_PASSWORD estiver definida, atualiza a senha
+        # (permite trocar a senha pelo painel do Render sem precisar de Shell)
+        if os.environ.get('ADMIN_PASSWORD'):
+            cur.execute(
+                'UPDATE usuarios SET password_hash = ? WHERE username = ?',
+                (generate_password_hash(admin_password), admin_username)
+            )
 
     # ----- Seed: competências (REAIS, da Resolução n° 682-CD/2026) -----
     if cur.execute('SELECT COUNT(*) FROM competencias').fetchone()[0] == 0:
@@ -465,6 +477,38 @@ TABELAS = {
         'rotulos': ['Categoria (eixo, pdi, indicador)', 'Rótulo', 'Valor', 'Percentual'],
     },
 }
+
+
+@app.route('/admin/trocar-senha', methods=['GET', 'POST'])
+@login_required
+def admin_trocar_senha():
+    """Permite ao administrador trocar a própria senha pelo navegador."""
+    if request.method == 'POST':
+        senha_atual = request.form.get('senha_atual', '')
+        nova_senha = request.form.get('nova_senha', '')
+        confirmar = request.form.get('confirmar', '')
+
+        db = get_db()
+        user = db.execute(
+            'SELECT * FROM usuarios WHERE id = ?', (session['user_id'],)
+        ).fetchone()
+
+        if not check_password_hash(user['password_hash'], senha_atual):
+            flash('Senha atual incorreta.', 'danger')
+        elif len(nova_senha) < 8:
+            flash('A nova senha deve ter pelo menos 8 caracteres.', 'danger')
+        elif nova_senha != confirmar:
+            flash('A confirmação não confere com a nova senha.', 'danger')
+        else:
+            db.execute(
+                'UPDATE usuarios SET password_hash = ? WHERE id = ?',
+                (generate_password_hash(nova_senha), session['user_id'])
+            )
+            db.commit()
+            flash('Senha alterada com sucesso!', 'success')
+            return redirect(url_for('admin'))
+
+    return render_template('trocar_senha.html')
 
 
 @app.route('/admin/<tabela>')

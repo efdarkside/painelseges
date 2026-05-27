@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Trocar Senha — SEGES Admin{% endblock %}
+{% block content %}
+<div class="container" style="max-width:500px">
+  <a href="{{ url_for('admin') }}" style="font-size:12px;color:#64748b">← Voltar ao admin</a>
+  <h2>Trocar Senha</h2>
+  <p style="color:#64748b;font-size:13px;margin-bottom:18px">Defina uma nova senha forte para sua conta administrativa.</p>
+
+  <form method="POST" class="card">
+    <div class="form-group">
+      <label>Senha atual</label>
+      <input name="senha_atual" type="password" required autofocus>
+    </div>
+    <div class="form-group">
+      <label>Nova senha (mínimo 8 caracteres)</label>
+      <input name="nova_senha" type="password" required minlength="8">
+    </div>
+    <div class="form-group">
+      <label>Confirmar nova senha</label>
+      <input name="confirmar" type="password" required minlength="8">
+    </div>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button class="btn-primary" type="submit">Alterar senha</button>
+      <a href="{{ url_for('admin') }}" class="btn-sec">Cancelar</a>
+    </div>
+    <p style="font-size:11px;color:#64748b;margin-top:14px">
+      <strong>Dica:</strong> use uma combinação de letras maiúsculas, minúsculas, números e símbolos.
+    </p>
+  </form>
+</div>
+{% endblock %}

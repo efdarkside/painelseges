@@ -30,5 +30,10 @@
     <a href="{{ url_for('admin_listar', tabela='talentos') }}" class="admin-link"><i class="ti ti-star"></i><span>Banco de Talentos</span><small>Servidores cadastrados</small></a>
     <a href="{{ url_for('admin_listar', tabela='solicitacoes') }}" class="admin-link"><i class="ti ti-headset"></i><span>Solicitações</span><small>Atendimentos recebidos</small></a>
   </div>
+
+  <h3 style="margin-top:24px;margin-bottom:12px">Configurações</h3>
+  <div class="admin-grid">
+    <a href="{{ url_for('admin_trocar_senha') }}" class="admin-link"><i class="ti ti-lock"></i><span>Trocar senha</span><small>Alterar sua senha de acesso</small></a>
+  </div>
 </div>
 {% endblock %}
