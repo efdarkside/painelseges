@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Administração — SEGES{% endblock %}
+{% block content %}
+<div class="container">
+  <h2>Área Administrativa</h2>
+  <p style="color:#64748b;font-size:13px;margin-bottom:20px">Edite todas as informações exibidas no painel público.</p>
+
+  <div class="metrics">
+    <div class="metric azul"><div class="metric-label">Métricas</div><div class="metric-value">{{ stats.metricas }}</div></div>
+    <div class="metric verde"><div class="metric-label">Cursos</div><div class="metric-value">{{ stats.cursos }}</div></div>
+    <div class="metric amarelo"><div class="metric-label">Ações PDP</div><div class="metric-value">{{ stats.acoes_pdp }}</div></div>
+    <div class="metric roxo"><div class="metric-label">Talentos</div><div class="metric-value">{{ stats.talentos }}</div></div>
+  </div>
+
+  {% if stats.solicitacoes_pendentes > 0 %}
+  <div class="alert-info">
+    <i class="ti ti-bell"></i> Você tem <strong>{{ stats.solicitacoes_pendentes }}</strong> solicitação(ões) pendente(s) de atendimento.
+    <a href="{{ url_for('admin_listar', tabela='solicitacoes') }}">Ver agora →</a>
+  </div>
+  {% endif %}
+
+  <h3 style="margin-top:24px;margin-bottom:12px">Editar dados do painel</h3>
+  <div class="admin-grid">
+    <a href="{{ url_for('admin_listar', tabela='metricas') }}" class="admin-link"><i class="ti ti-chart-bar"></i><span>Métricas</span><small>Cartões da Visão Geral</small></a>
+    <a href="{{ url_for('admin_listar', tabela='competencias') }}" class="admin-link"><i class="ti ti-file-description"></i><span>Competências</span><small>Atribuições da SEGES</small></a>
+    <a href="{{ url_for('admin_listar', tabela='fases_pdp') }}" class="admin-link"><i class="ti ti-list-check"></i><span>Fases do PDP</span><small>Cronograma</small></a>
+    <a href="{{ url_for('admin_listar', tabela='acoes_pdp') }}" class="admin-link"><i class="ti ti-users"></i><span>Ações do PDP</span><small>Capacitações planejadas</small></a>
+    <a href="{{ url_for('admin_listar', tabela='cursos') }}" class="admin-link"><i class="ti ti-school"></i><span>Cursos</span><small>Catálogo de capacitações</small></a>
+    <a href="{{ url_for('admin_listar', tabela='diagnostico') }}" class="admin-link"><i class="ti ti-target"></i><span>Diagnóstico</span><small>Eixos e indicadores</small></a>
+    <a href="{{ url_for('admin_listar', tabela='talentos') }}" class="admin-link"><i class="ti ti-star"></i><span>Banco de Talentos</span><small>Servidores cadastrados</small></a>
+    <a href="{{ url_for('admin_listar', tabela='solicitacoes') }}" class="admin-link"><i class="ti ti-headset"></i><span>Solicitações</span><small>Atendimentos recebidos</small></a>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}{{ config.titulo }} — Admin{% endblock %}
+{% block content %}
+<div class="container">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+    <div>
+      <a href="{{ url_for('admin') }}" style="font-size:12px;color:#64748b">← Voltar ao admin</a>
+      <h2>{{ config.titulo }}</h2>
+    </div>
+    <a href="{{ url_for('admin_novo', tabela=tabela) }}" class="btn-primary"><i class="ti ti-plus"></i> Novo registro</a>
+  </div>
+
+  <div class="tbl-wrap">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          {% for r in config.rotulos %}<th>{{ r }}</th>{% endfor %}
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for reg in registros %}
+        <tr>
+          <td>{{ reg.id }}</td>
+          {% for c in config.campos %}<td>{{ (reg[c] or '')|string|truncate(80) }}</td>{% endfor %}
+          <td class="actions">
+            <a href="{{ url_for('admin_editar', tabela=tabela, id=reg.id) }}" title="Editar"><i class="ti ti-edit"></i></a>
+            <form method="POST" action="{{ url_for('admin_excluir', tabela=tabela, id=reg.id) }}" style="display:inline" onsubmit="return confirm('Excluir este registro?')">
+              <button type="submit" class="link-btn" title="Excluir"><i class="ti ti-trash"></i></button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="{{ config.campos|length + 2 }}" style="text-align:center;color:#64748b;padding:24px">Nenhum registro.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

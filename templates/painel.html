@@ -1,0 +1,269 @@
+{% extends "base.html" %}
+{% block title %}Painel SEGES — Acompanhamento de Atividades{% endblock %}
+
+{% block content %}
+<div class="painel">
+
+<nav class="tabs">
+  <button class="tab-btn active" data-tab="dashboard"><i class="ti ti-dashboard"></i> Visão Geral</button>
+  <button class="tab-btn" data-tab="pdp"><i class="ti ti-users"></i> PDP</button>
+  <button class="tab-btn" data-tab="cursos"><i class="ti ti-school"></i> Cursos</button>
+  <button class="tab-btn" data-tab="diagnostico"><i class="ti ti-chart-bar"></i> Diagnóstico</button>
+  <button class="tab-btn" data-tab="talentos"><i class="ti ti-star"></i> Banco de Talentos</button>
+  <button class="tab-btn" data-tab="atendimento"><i class="ti ti-headset"></i> Atendimento</button>
+</nav>
+
+<div class="tab-content">
+  <!-- Dashboard -->
+  <section class="tab-panel active" id="tab-dashboard">
+    <div class="metrics" id="metrics-container"></div>
+    <h3 class="sec-title">Execução das competências SEGES</h3>
+    <div class="card" id="competencias-container"></div>
+  </section>
+
+  <!-- PDP -->
+  <section class="tab-panel" id="tab-pdp">
+    <h3 class="sec-title">Fases do PDP</h3>
+    <div class="card" id="fases-container"></div>
+    <h3 class="sec-title">Ações do PDP — acompanhamento</h3>
+    <div class="tbl-wrap" id="acoes-container"></div>
+  </section>
+
+  <!-- Cursos -->
+  <section class="tab-panel" id="tab-cursos">
+    <div class="filter-row">
+      <input type="text" id="filtro-curso" placeholder="Buscar curso..." class="search-input">
+      <select id="filtro-status-curso" class="filter-select">
+        <option value="">Todos os status</option>
+        <option>Em andamento</option>
+        <option>Concluído</option>
+        <option>Programado</option>
+      </select>
+    </div>
+    <div class="tbl-wrap" id="cursos-container"></div>
+  </section>
+
+  <!-- Diagnóstico -->
+  <section class="tab-panel" id="tab-diagnostico">
+    <div class="cards-grid">
+      <div class="card">
+        <h4>Necessidades por eixo temático</h4>
+        <div id="diag-eixos"></div>
+      </div>
+      <div class="card">
+        <h4>Alinhamento ao PDI/PPI</h4>
+        <div id="diag-pdi"></div>
+      </div>
+      <div class="card">
+        <h4>Indicadores monitorados</h4>
+        <div id="diag-indicadores"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Banco de Talentos -->
+  <section class="tab-panel" id="tab-talentos">
+    <input type="text" id="filtro-talento" placeholder="Buscar servidor..." class="search-input" style="margin-bottom:12px">
+    <div class="talent-grid" id="talentos-container"></div>
+  </section>
+
+  <!-- Atendimento -->
+  <section class="tab-panel" id="tab-atendimento">
+    <div class="row2">
+      <div>
+        <h3 class="sec-title">Solicitações recentes</h3>
+        <div class="tbl-wrap" id="solicitacoes-container"></div>
+      </div>
+      <div>
+        <h3 class="sec-title">Registrar nova solicitação</h3>
+        <form id="form-solicitacao" class="card">
+          <div class="form-group"><label>Nome do servidor *</label><input name="servidor" required></div>
+          <div class="form-group"><label>SIAPE</label><input name="siape"></div>
+          <div class="form-group"><label>Unidade</label><input name="unidade" placeholder="Ex.: PROPLAN, FACOM..."></div>
+          <div class="form-group">
+            <label>Tipo *</label>
+            <select name="tipo" required>
+              <option value="">Selecione...</option>
+              <option>Orientação sobre capacitação</option>
+              <option>Licença capacitação</option>
+              <option>PDP — inclusão/alteração</option>
+              <option>Banco de Talentos</option>
+              <option>Certificado de curso</option>
+              <option>Compensação de recesso</option>
+              <option>Outros</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Descrição</label><textarea name="descricao" rows="3"></textarea></div>
+          <button class="btn-primary" type="submit">Enviar</button>
+          <p id="form-msg" style="font-size:12px;margin-top:8px;color:#15803d"></p>
+        </form>
+      </div>
+    </div>
+  </section>
+</div>
+</div>
+
+<script>
+// ---------- Navegação por abas ----------
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+// ---------- Carregamento dos dados pela API ----------
+async function carregarDados() {
+  const r = await fetch('/api/dados');
+  const d = await r.json();
+
+  // Métricas
+  document.getElementById('metrics-container').innerHTML = d.metricas.map(m => `
+    <div class="metric ${m.cor}">
+      <div class="metric-label">${m.rotulo}</div>
+      <div class="metric-value">${m.valor}</div>
+      <div class="metric-sub">${m.subtitulo || ''}</div>
+    </div>
+  `).join('');
+
+  // Competências
+  document.getElementById('competencias-container').innerHTML = d.competencias.map(c => `
+    <div class="prog-row">
+      <div class="prog-label"><span>${c.titulo}</span><span>${c.progresso}%</span></div>
+      <div class="prog-bar"><div class="prog-fill fill-azul" style="width:${c.progresso}%"></div></div>
+      <div style="font-size:11px;color:#64748b;margin-top:4px">${c.descricao}</div>
+    </div>
+  `).join('');
+
+  // Fases PDP
+  document.getElementById('fases-container').innerHTML = d.fases_pdp.map(f => {
+    const cor = f.status === 'Concluído' ? 'b-verde' :
+                f.status === 'Em andamento' ? 'b-azul' : 'b-cinza';
+    return `
+      <div class="pdp-fase">
+        <div class="pdp-num pdp-${f.status === 'Concluído' ? 'ok' : f.status === 'Em andamento' ? 'ativo' : 'pen'}">${f.ordem}</div>
+        <div class="pdp-desc">${f.descricao}</div>
+        <span class="badge ${cor}">${f.prazo || f.status}</span>
+      </div>`;
+  }).join('');
+
+  // Ações PDP
+  document.getElementById('acoes-container').innerHTML = `
+    <div class="tbl-head cols-5"><span>Ação</span><span>Modalidade</span><span>Público</span><span>Status</span><span>Vagas</span></div>
+    ${d.acoes_pdp.map(a => `
+      <div class="tbl-row cols-5">
+        <span>${a.nome}</span><span>${a.modalidade || ''}</span><span>${a.publico_alvo || ''}</span>
+        <span class="badge ${statusBadge(a.status)}">${a.status}</span><span>${a.vagas || '—'}</span>
+      </div>`).join('')}
+  `;
+
+  // Cursos
+  renderCursos(d.cursos);
+  window._cursos = d.cursos;
+
+  // Diagnóstico
+  document.getElementById('diag-eixos').innerHTML = d.diagnostico.filter(x => x.categoria === 'eixo').map(e => `
+    <div class="prog-row">
+      <div class="prog-label"><span>${e.rotulo}</span><span>${e.valor}</span></div>
+      <div class="prog-bar"><div class="prog-fill fill-azul" style="width:${e.percentual}%"></div></div>
+    </div>`).join('');
+  document.getElementById('diag-pdi').innerHTML = d.diagnostico.filter(x => x.categoria === 'pdi').map(e => `
+    <div class="prog-row">
+      <div class="prog-label"><span>${e.rotulo}</span><span>${e.valor}</span></div>
+      <div class="prog-bar"><div class="prog-fill fill-verde" style="width:${e.percentual}%"></div></div>
+    </div>`).join('');
+  document.getElementById('diag-indicadores').innerHTML = d.diagnostico.filter(x => x.categoria === 'indicador').map(e => `
+    <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px">
+      <span>${e.rotulo}</span><span class="badge b-azul">${e.valor}</span>
+    </div>`).join('');
+
+  // Talentos
+  renderTalentos(d.talentos);
+  window._talentos = d.talentos;
+
+  // Solicitações
+  document.getElementById('solicitacoes-container').innerHTML = `
+    <div class="tbl-head cols-3"><span>Servidor / Tipo</span><span>Unidade</span><span>Status</span></div>
+    ${d.solicitacoes.map(s => `
+      <div class="tbl-row cols-3">
+        <span><strong>${s.servidor}</strong><br><span style="font-size:10px;color:#64748b">${s.tipo}</span></span>
+        <span>${s.unidade || '—'}</span>
+        <span class="badge ${statusBadge(s.status)}">${s.status}</span>
+      </div>`).join('') || '<div style="padding:12px;color:#64748b;font-size:12px">Nenhuma solicitação registrada.</div>'}
+  `;
+}
+
+function renderCursos(cursos) {
+  document.getElementById('cursos-container').innerHTML = `
+    <div class="tbl-head cols-5"><span>Curso</span><span>CH</span><span>Modalidade</span><span>Status</span><span>Inscritos</span></div>
+    ${cursos.map(c => `
+      <div class="tbl-row cols-5">
+        <span>${c.nome}</span><span>${c.carga_horaria || ''}</span><span>${c.modalidade || ''}</span>
+        <span class="badge ${statusBadge(c.status)}">${c.status}</span><span>${c.inscritos}</span>
+      </div>`).join('')}
+  `;
+}
+
+function renderTalentos(talentos) {
+  document.getElementById('talentos-container').innerHTML = talentos.map(t => {
+    const ini = t.nome.split(' ').slice(0, 2).map(n => n[0]).join('');
+    return `
+      <div class="talent-card">
+        <div class="talent-avatar">${ini}</div>
+        <div class="talent-name">${t.nome}</div>
+        <div class="talent-cargo">${t.cargo || ''}</div>
+        <div class="talent-tags">${(t.competencias || '').split(',').map(c => c.trim()).filter(Boolean).map(c => `<span class="talent-tag">${c}</span>`).join('')}</div>
+      </div>`;
+  }).join('');
+}
+
+function statusBadge(s) {
+  if (!s) return 'b-cinza';
+  if (s === 'Concluído' || s === 'Resolvido') return 'b-verde';
+  if (s === 'Em andamento' || s === 'Em atend.') return 'b-azul';
+  if (s === 'Pendente' || s === 'Em seleção') return 'b-amarelo';
+  return 'b-cinza';
+}
+
+// Filtros
+document.getElementById('filtro-curso').addEventListener('input', e => {
+  const q = e.target.value.toLowerCase();
+  renderCursos((window._cursos || []).filter(c => c.nome.toLowerCase().includes(q)));
+});
+document.getElementById('filtro-status-curso').addEventListener('change', e => {
+  const s = e.target.value;
+  renderCursos((window._cursos || []).filter(c => !s || c.status === s));
+});
+document.getElementById('filtro-talento').addEventListener('input', e => {
+  const q = e.target.value.toLowerCase();
+  renderTalentos((window._talentos || []).filter(t => t.nome.toLowerCase().includes(q) || (t.cargo || '').toLowerCase().includes(q)));
+});
+
+// Form de solicitação
+document.getElementById('form-solicitacao').addEventListener('submit', async e => {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const data = Object.fromEntries(fd);
+  const r = await fetch('/api/solicitacao', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(data)
+  });
+  const res = await r.json();
+  const msgEl = document.getElementById('form-msg');
+  if (res.ok) {
+    msgEl.textContent = res.mensagem;
+    msgEl.style.color = '#15803d';
+    e.target.reset();
+    carregarDados();
+  } else {
+    msgEl.textContent = res.erro || 'Erro ao enviar.';
+    msgEl.style.color = '#991b1b';
+  }
+});
+
+carregarDados();
+</script>
+{% endblock %}

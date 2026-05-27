@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Login — SEGES{% endblock %}
+{% block content %}
+<div class="login-wrap">
+  <form method="POST" class="card login-card">
+    <h2 style="margin-bottom:16px">Acesso Administrativo</h2>
+    <div class="form-group">
+      <label>Usuário</label>
+      <input name="username" required autofocus>
+    </div>
+    <div class="form-group">
+      <label>Senha</label>
+      <input name="password" type="password" required>
+    </div>
+    <button class="btn-primary" type="submit">Entrar</button>
+    <p style="font-size:11px;color:#64748b;margin-top:14px">
+      <strong>Credenciais iniciais:</strong> admin / seges2026<br>
+      <em>Altere após o primeiro acesso.</em>
+    </p>
+  </form>
+</div>
+{% endblock %}

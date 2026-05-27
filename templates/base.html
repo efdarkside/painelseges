@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}SEGES — Painel{% endblock %}</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+{% block extra_head %}{% endblock %}
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <div>
+      <span class="header-inst">PROGEP/UFMS &nbsp;›&nbsp; DIGEC</span>
+      <h1 class="header-title">SEGES — Secretaria de Formação para Gestão do Conhecimento</h1>
+      <span class="header-sub">Resolução n° 682-CD/2026</span>
+    </div>
+    <nav class="header-nav">
+      <a href="{{ url_for('index') }}">Painel</a>
+      {% if session.user_id %}
+        <a href="{{ url_for('admin') }}">Admin</a>
+        <a href="{{ url_for('logout') }}">Sair ({{ session.user_nome }})</a>
+      {% else %}
+        <a href="{{ url_for('login') }}">Entrar</a>
+      {% endif %}
+    </nav>
+  </div>
+</header>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="flash-area">
+      {% for category, msg in messages %}
+        <div class="flash flash-{{ category }}">{{ msg }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+<main>
+  {% block content %}{% endblock %}
+</main>
+
+<footer class="site-footer">
+  SEGES/DIGEC/PROGEP · UFMS &nbsp;|&nbsp;
+  seges.progep@ufms.br &nbsp;|&nbsp; (67) 3345-7076
+</footer>
+
+{% block scripts %}{% endblock %}
+</body>
+</html>

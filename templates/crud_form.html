@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Editar' if registro else 'Novo' }} — {{ config.titulo }}{% endblock %}
+{% block content %}
+<div class="container" style="max-width:700px">
+  <a href="{{ url_for('admin_listar', tabela=tabela) }}" style="font-size:12px;color:#64748b">← Voltar à lista</a>
+  <h2>{{ 'Editar' if registro else 'Novo' }} — {{ config.titulo }}</h2>
+
+  <form method="POST" class="card" style="margin-top:16px">
+    {% for i in range(config.campos|length) %}
+      {% set campo = config.campos[i] %}
+      {% set rotulo = config.rotulos[i] %}
+      <div class="form-group">
+        <label>{{ rotulo }}</label>
+        {% if campo == 'descricao' or campo == 'competencias' %}
+          <textarea name="{{ campo }}" rows="3">{{ registro[campo] if registro else '' }}</textarea>
+        {% else %}
+          <input name="{{ campo }}" value="{{ registro[campo] if registro else '' }}">
+        {% endif %}
+      </div>
+    {% endfor %}
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button class="btn-primary" type="submit">Salvar</button>
+      <a href="{{ url_for('admin_listar', tabela=tabela) }}" class="btn-sec">Cancelar</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
